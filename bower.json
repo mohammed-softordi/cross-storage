@@ -1,12 +1,15 @@
 {
-  "name": "cross-storage",
-  "version": "1.0.0",
-  "description": "Cross domain local storage",
+  "name": "scania-cross-storage",
+  "version": "2.0.0",
+  "description": "Cross domain localStorage, indexedDB and WebSQL using localforage",
   "license": "Apache-2.0",
+  "dependencies": {
+    "localforage": "^1.7.3"
+  },
   "authors": [
     {
-      "name": "Daniel St. Jules",
-      "email": "danielst.jules@gmail.com",
+      "name": "Mohammed Ayowa",
+      "email": "mohammde.ayowa@scania.com",
       "url": "http://danielstjules.com"
     }
   ],

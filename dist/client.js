@@ -1,9 +1,9 @@
 /**
- * cross-storage - Cross domain local storage
+ * scania-cross-storage - Cross domain localStorage, indexedDB and WebSQL using localforage
  *
- * @version   1.0.0
- * @link      https://github.com/zendesk/cross-storage
- * @author    Daniel St. Jules <danielst.jules@gmail.com>
+ * @version   2.0.0
+ * @link      https://github.com/mohammed-softordi/cross-storage
+ * @author    Mohammed Ayowa <mohammed.ayowa@scania.com>
  * @copyright Zendesk
  * @license   Apache-2.0
  */
@@ -184,6 +184,8 @@
     return this._request('set', {
       key:   key,
       value: value
+    }).then(function (response) {
+      return response;
     });
   };
 
@@ -197,10 +199,10 @@
    * @param   {...string} key The key to retrieve
    * @returns {Promise}   A promise that is settled on hub response or timeout
    */
-  CrossStorageClient.prototype.get = function(key) {
-    var args = Array.prototype.slice.call(arguments);
-
-    return this._request('get', {keys: args});
+  CrossStorageClient.prototype.get = function(key, callBackFn) {
+    this._request('get', {
+      key: key
+    }).then(callBackFn);
   };
 
   /**

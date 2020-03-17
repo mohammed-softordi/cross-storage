@@ -1,14 +1,14 @@
 /**
- * cross-storage - Cross domain local storage
+ * scania-cross-storage - Cross domain localStorage, indexedDB and WebSQL using localforage
  *
- * @version   1.0.0
- * @link      https://github.com/zendesk/cross-storage
- * @author    Daniel St. Jules <danielst.jules@gmail.com>
+ * @version   2.0.0
+ * @link      https://github.com/mohammed-softordi/cross-storage
+ * @author    Mohammed Ayowa <mohammed.ayowa@scania.com>
  * @copyright Zendesk
  * @license   Apache-2.0
  */
 
-;(function(root) {
+(function(root) {
   var CrossStorageHub = {};
 
   /**
@@ -28,13 +28,13 @@
    *
    * @param {array} permissions An array of objects with origin and allow
    */
-  CrossStorageHub.init = function(permissions) {
+  CrossStorageHub.init = function(permissions, option) {
     var available = true;
 
     // Return if localStorage is unavailable, or third party
     // access is disabled
     try {
-      if (!window.localStorage) available = false;
+      if (!option) available = false;
     } catch (e) {
       available = false;
     }
@@ -47,6 +47,7 @@
       }
     }
 
+    localforage.config(option);
     CrossStorageHub._permissions = permissions || [];
     CrossStorageHub._installListener();
     window.parent.postMessage('cross-storage:ready', '*');
@@ -108,23 +109,28 @@
     } else if (!CrossStorageHub._permitted(origin, method)) {
       error = 'Invalid permissions for ' + method;
     } else {
-      try {
-        result = CrossStorageHub['_' + method](request.params);
-      } catch (err) {
-        error = err.message;
-      }
+      CrossStorageHub['_' + method](request.params).then(function (result) {
+        response = JSON.stringify({
+          id: request.id,
+          result: result
+        });
+
+        // postMessage requires that the target origin be set to "*" for "file://"
+        targetOrigin = (origin === 'file://') ? '*' : origin;
+
+        window.parent.postMessage(response, targetOrigin);
+      }).catch(function(err) {
+        response = JSON.stringify({
+          id: request.id,
+          error: err
+        });
+
+        // postMessage requires that the target origin be set to "*" for "file://"
+        targetOrigin = (origin === 'file://') ? '*' : origin;
+
+        window.parent.postMessage(response, targetOrigin);
+      });
     }
-
-    response = JSON.stringify({
-      id: request.id,
-      error: error,
-      result: result
-    });
-
-    // postMessage requires that the target origin be set to "*" for "file://"
-    targetOrigin = (origin === 'file://') ? '*' : origin;
-
-    window.parent.postMessage(response, targetOrigin);
   };
 
   /**
@@ -165,7 +171,7 @@
    * @param {object} params An object with key and value
    */
   CrossStorageHub._set = function(params) {
-    window.localStorage.setItem(params.key, params.value);
+    localforage.setItem(params.key, params.value, console.log);
   };
 
   /**
@@ -177,22 +183,7 @@
    * @returns {*|*[]}  Either a single value, or an array
    */
   CrossStorageHub._get = function(params) {
-    var storage, result, i, value;
-
-    storage = window.localStorage;
-    result = [];
-
-    for (i = 0; i < params.keys.length; i++) {
-      try {
-        value = storage.getItem(params.keys[i]);
-      } catch (e) {
-        value = null;
-      }
-
-      result.push(value);
-    }
-
-    return (result.length > 1) ? result : result[0];
+    return localforage.getItem(params.key);
   };
 
   /**
@@ -202,7 +193,7 @@
    */
   CrossStorageHub._del = function(params) {
     for (var i = 0; i < params.keys.length; i++) {
-      window.localStorage.removeItem(params.keys[i]);
+      localforage.removeItem(params.keys[i], console.log);
     }
   };
 
@@ -210,7 +201,7 @@
    * Clears localStorage.
    */
   CrossStorageHub._clear = function() {
-    window.localStorage.clear();
+    localforage.clear();
   };
 
   /**
@@ -219,14 +210,20 @@
    * @returns {string[]} The array of keys
    */
   CrossStorageHub._getKeys = function(params) {
-    var i, length, keys;
+    var i, keys;
 
     keys = [];
-    length = window.localStorage.length;
 
-    for (i = 0; i < length; i++) {
-      keys.push(window.localStorage.key(i));
-    }
+    localforage.length().then(function(numberOfKeys) {
+      for (i = 0; i < numberOfKeys; i++) {
+        localforage.key(i, function (keyName) {
+          keys.push(keyName);
+        });
+      }
+    }).catch(function(err) {
+      // This code runs if there were any errors
+      console.log(err);
+    });
 
     return keys;
   };
