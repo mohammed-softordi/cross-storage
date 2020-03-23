@@ -1,7 +1,7 @@
 /**
  * scania-cross-storage - Cross domain localStorage, indexedDB and WebSQL using localforage
  *
- * @version   2.0.0
+ * @version   2.0.2
  * @link      https://github.com/mohammed-softordi/cross-storage
  * @author    Mohammed Ayowa <mohammed.ayowa@scania.com>
  * @copyright Zendesk
@@ -171,7 +171,7 @@
    * @param {object} params An object with key and value
    */
   CrossStorageHub._set = function(params) {
-    localforage.setItem(params.key, params.value, console.log);
+    return localforage.setItem(params.key, params.value);
   };
 
   /**
@@ -192,9 +192,7 @@
    * @param {object} params An object with an array of keys
    */
   CrossStorageHub._del = function(params) {
-    for (var i = 0; i < params.keys.length; i++) {
-      localforage.removeItem(params.keys[i], console.log);
-    }
+    return localforage.removeItem(params.key);
   };
 
   /**

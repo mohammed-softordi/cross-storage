@@ -1,7 +1,7 @@
 /**
  * scania-cross-storage - Cross domain localStorage, indexedDB and WebSQL using localforage
  *
- * @version   2.0.0
+ * @version   2.0.2
  * @link      https://github.com/mohammed-softordi/cross-storage
  * @author    Mohammed Ayowa <mohammed.ayowa@scania.com>
  * @copyright Zendesk
@@ -181,12 +181,10 @@
    * @returns {Promise} A promise that is settled on hub response or timeout
    */
   CrossStorageClient.prototype.set = function(key, value) {
-    return this._request('set', {
+    this._request('set', {
       key:   key,
       value: value
-    }).then(function (response) {
-      return response;
-    });
+    })
   };
 
   /**
@@ -212,10 +210,10 @@
    * @param   {...string} key The key to delete
    * @returns {Promise}   A promise that is settled on hub response or timeout
    */
-  CrossStorageClient.prototype.del = function() {
-    var args = Array.prototype.slice.call(arguments);
-
-    return this._request('del', {keys: args});
+  CrossStorageClient.prototype.del = function(key, callBackFn) {
+    this._request('del', {
+      key: key
+    }).then(callBackFn);
   };
 
   /**
