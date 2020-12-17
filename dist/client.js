@@ -203,6 +203,12 @@
     }).then(callBackFn);
   };
 
+    CrossStorageClient.prototype.get = function(key) {
+        return this._request('get', {
+            key: key
+        });
+    };
+
   /**
    * Accepts one or more keys for deletion. Returns a promise that is settled on
    * hub response or timeout.
